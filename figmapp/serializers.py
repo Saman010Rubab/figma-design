@@ -75,7 +75,7 @@ class PlacementSerializer(serializers.ModelSerializer):
 
 class AdvSerializer1(serializers.ModelSerializer):
     class Meta:
-        model= models.Ads
+        model= models.Ad
         fields = ['id','ad_name', 'ad_title', 'landing_page', 'utm_structure', 'target_matrics', 'utm_parameters' ]
         # read_only_fields = ['user']
 
@@ -107,19 +107,45 @@ class ImageSerializer(serializers.ModelSerializer):
         read_only_fields = ['ad']
 
 class AdsSerializer(serializers.ModelSerializer):
-    # image = ImageSerializer()
+    image = ImageSerializer( required=False)
     user= serializers.ReadOnlyField(source='user.id')
     class Meta:
-        model= models.Ads
-        fields = ['id', 'user','ad_name','ad_title','landing_page','utm_structure','target_matrics','utm_parameters','placement_types','target_market','daily_budget','total_budget','description','ad_goal']
+        model= models.Ad
+        fields = ['id', 'user','ad_name','ad_title','landing_page','utm_structure','target_matrics','utm_parameters','placement_types','target_market','daily_budget','total_budget','description','ad_goal',"image"]
         # exclude = ['available']
         read_only_fields = ['user']
     def create(self, validated_data):
+        images_data = validated_data.pop('image')
         user= self.context['request'].user
-        ads = models.Ads.objects.create(user=user, **validated_data)
-        return ads
+        ad = models.Ad.objects.create(user=user, **validated_data)
+        # for image_data in images_data:
+        models.Image.objects.create(ad=ad, **images_data)
+        return ad
+    def update(self, instance, validated_data):
+        images_data = validated_data.pop('image')
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        # instance.title = validated_data.get('title', instance.title)
+        # instance.description = validated_data.get('description', instance.description)
+        # instance.save()
 
+        # Update or create new images
+        # for image_data in images_data:
+        #     image_id = image_data.get('id', None)
+        #     if image_id:
+        #         image = models.Image.objects.get(id=image_id, ad=instance)
+        #         image.image = image_data.get('image', image.image)
+        #         # image.caption = image_data.get('caption', image.caption)
+        #         image.save()
+        #     else:
+        models.Image.objects.filter(ad=instance).delete()
+        models.Image.objects.create(ad=instance, **images_data)
+        return instance
+        
 class CampaignSerializer(serializers.ModelSerializer):
+    placement = PlacementSerializer()
+    ad = AdsSerializer()
     class Meta:
         model= models.Campaign
         fields = '__all__'
@@ -128,7 +154,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         # Filter placements to show only available ones
         self.fields['placement'].queryset = models.Placement.objects.filter(available=True)
         # Filter ads to show only available ones
-        self.fields['ad'].queryset = models.Ads.objects.filter(available=True)
+        self.fields['ad'].queryset = models.Ad.objects.filter(available=True)
 
     def create(self, validated_data):
         placement = validated_data['placement']
@@ -143,11 +169,12 @@ class CampaignSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class CampaignDetailSerializer(serializers.ModelSerializer):
+
     placement = PlacementSerializer()
     ad = AdsSerializer()
     class Meta:
         model = models.Campaign
-        fields = '__all__'
+        fields ='__all__'
 
 class ShotsSerializer(serializers.ModelSerializer):
     # campaign = CampaignSerializer(read_only=True)
@@ -156,6 +183,24 @@ class ShotsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['campaign']
 
+class CampImageSerializer(serializers.ModelSerializer):
+    # campaign = CampaignSerializer(read_only=True)
+    class Meta:
+        model = models.CampaignImage
+        fields = '__all__'
+        read_only_fields = ['campaign']
 
+class CampVideoSerializer(serializers.ModelSerializer):
+    # campaign = CampaignSerializer(read_only=True)
+    class Meta:
+        model = models.CampaignVideo
+        fields = '__all__'
+        read_only_fields = ['campaign']
 
+class CampFileSerializer(serializers.ModelSerializer):
+    # campaign = CampaignSerializer(read_only=True)
+    class Meta:
+        model = models.CampaignFile
+        fields = '__all__'
+        read_only_fields = ['campaign']
 

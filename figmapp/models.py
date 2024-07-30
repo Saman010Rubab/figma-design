@@ -173,7 +173,7 @@ class Advertiser(models.Model):
     high_reslution_logo= models.ImageField('advertiser/logo', blank=True, null=True)
     files= models.FileField(upload_to='advertiser/files', blank=True, null=True)
     
-class Ads(models.Model):
+class Ad(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ad_name=models.CharField(max_length=150)
     ad_title = models.CharField( max_length=150)
@@ -193,7 +193,7 @@ class Ads(models.Model):
     
 class Campaign(models.Model):
     placement = models.ForeignKey(Placement, on_delete=models.CASCADE)
-    ad = models.ForeignKey(Ads, on_delete=models.CASCADE)
+    ad = models.ForeignKey(Ad, on_delete=models.CASCADE)
     start_date = models.DateTimeField(auto_now=False, auto_now_add=False)
     end_date = models.DateTimeField( auto_now=False, auto_now_add=False)
     def __str__(self):
@@ -201,14 +201,33 @@ class Campaign(models.Model):
 
 class Screenshot(models.Model):
     campaign= models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    shots= models.ImageField( upload_to='campaign/shots',null=True)
+    shots= models.ImageField( upload_to='campaign/images',null=True)
     def __str__(self):
         return self.shots
 
 class Image(models.Model):
-    ad = models.ForeignKey(Ads, on_delete=models.CASCADE)
+    ad = models.ForeignKey(Ad, on_delete=models.CASCADE)
     image= models.ImageField(upload_to='ad/images',null=True)
     def __str__(self):
-        return self.image
+        return self.id
+        
+class CampaignImage(models.Model):
+    campaign= models.ForeignKey(Campaign , on_delete=models.CASCADE)
+    images = models.ImageField( upload_to='campaign/images',null=True)
+    def __str__(self):
+        return self.images
+
+class CampaignVideo(models.Model):
+    campaign= models.ForeignKey(Campaign , on_delete=models.CASCADE)
+    # video = models.FileField(_(""), upload_to=None, max_length=100)
+    videos = models.FileField( upload_to='campaign/videos',null=True)
+    def __str__(self):
+        return self.videos
+
+class CampaignFile(models.Model):
+    campaign= models.ForeignKey(Campaign , on_delete=models.CASCADE)
+    files = models.FileField( upload_to='campaign/files',null=True)
+    def __str__(self):
+        return self.files
     
     

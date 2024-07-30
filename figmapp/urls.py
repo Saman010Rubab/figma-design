@@ -3,7 +3,7 @@ from . import views
 
 
 urlpatterns=[
-    # path("", views.UserList.as_view(), name = "user"),
+    path("", views.UserList.as_view(), name = "user"),
     path('user/', views.UserList.as_view(), name = "user"),
     path("user/<int:pk>/", views.UserDetail.as_view(), name = "userdetail"),
     path("login/", views.UserLoginView.as_view(), name = "login"),
@@ -12,6 +12,9 @@ urlpatterns=[
     path("profileupdate/<int:pk>/", views.ProfileUpdate.as_view(), name = "profileupdate"),
     path("campaigns/", views.CampaignList.as_view(), name = "campaigns"),
     path("campaigns/<int:pk>/", views.CampaignDetail.as_view(), name = "campaignsdetail"),
+    path("campaigns/<int:campaign_id>/images", views.CampImage.as_view(), name = "campaignImage"),
+    path("campaigns/<int:campaign_id>/videos", views.CampVideo.as_view(), name = "campaignvideo"),
+    path("campaigns/<int:campaign_id>/files", views.CampFile.as_view(), name = "campaignfile"),
 
 
 

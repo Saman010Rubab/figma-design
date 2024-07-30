@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate,login
-
+from rest_framework.exceptions import NotFound
 # user signup
 class UserList(generics.ListCreateAPIView):
     queryset = models.User.objects.all()
@@ -75,6 +75,39 @@ class CampaignDetail(generics.RetrieveAPIView):
     serializer_class = serializers.CampaignDetailSerializer
     permission_classes = [IsAuthenticated]
 
+class CampImage(generics.ListCreateAPIView):
+    serializer_class = serializers.CampImageSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self, *args, **kwargs):
+        campaign_id = self.kwargs.get('campaign_id')
+        return models.CampaignImage.objects.filter(campaign=campaign_id)
+    def perform_create(self, serializer):
+        campaign_id = self.kwargs.get('campaign_id')
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+        serializer.save(campaign=campaign)
+
+class CampVideo(generics.ListCreateAPIView):
+    serializer_class = serializers.CampVideoSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self, *args, **kwargs):
+        campaign_id = self.kwargs.get('campaign_id')
+        return models.CampaignVideo.objects.filter(campaign=campaign_id)
+    def perform_create(self, serializer):
+        campaign_id = self.kwargs.get('campaign_id')
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+        serializer.save(campaign=campaign)
+
+class CampFile(generics.ListCreateAPIView):
+    serializer_class = serializers.CampFileSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self, *args, **kwargs):
+        campaign_id = self.kwargs.get('campaign_id')
+        return models.CampaignFile.objects.filter(campaign=campaign_id)
+    def perform_create(self, serializer):
+        campaign_id = self.kwargs.get('campaign_id')
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+        serializer.save(campaign=campaign)
+
 # publisher features
 
 class PubStep1(generics.RetrieveUpdateAPIView):
@@ -111,6 +144,8 @@ class PlacementsUpdate(generics.RetrieveUpdateDestroyAPIView):
 
 class ShotsView(generics.ListCreateAPIView):
     serializer_class = serializers.ShotsSerializer
+    permission_classes = [IsAuthenticated, IsPublisher]
+
     def get_queryset(self, *args, **kwargs):
         campaign = self.kwargs.get('campaign_id')
         return models.Screenshot.objects.filter(campaign=campaign)
@@ -121,7 +156,7 @@ class ShotsView(generics.ListCreateAPIView):
 
 # advertiser features
 class AdvStep1(generics.RetrieveUpdateAPIView):
-    queryset = models.Ads.objects.all()
+    queryset = models.Ad.objects.all()
     serializer_class = serializers.AdvSerializer1
     permission_classes = [AllowAny]
 
@@ -145,21 +180,22 @@ class AdsCreate(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated,IsAdvertiser]
     def get_queryset(self):
         user= self.request.user
-        return models.Ads.objects.filter(user=user)
+        return models.Ad.objects.filter(user=user)
 
 class AdsUpdate(generics.RetrieveUpdateDestroyAPIView):
-    queryset = models.Ads.objects.all()
+    queryset = models.Ad.objects.all()
     serializer_class = serializers.AdsSerializer
     permission_classes = [IsAuthenticated, IsOwner]
 
 class ImageView(generics.ListCreateAPIView):
     serializer_class = serializers.ImageSerializer
+    permission_classes = [IsAuthenticated, IsAdvertiser]
     def get_queryset(self, *args, **kwargs):
         ad = self.kwargs.get('ad_id')
         return models.Image.objects.filter(ad=ad)
     def perform_create(self, serializer):
         ad_id = self.kwargs.get('ad_id')
-        ad = models.Ads.objects.get(pk=ad_id)
+        ad = models.Ad.objects.get(pk=ad_id)
         serializer.save(ad=ad)
 
 # admin features
@@ -185,12 +221,12 @@ class AdvertiserList(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAdmin]
     
 class AdsList(generics.ListAPIView):
-    queryset = models.Ads.objects.all()
+    queryset = models.Ad.objects.all()
     serializer_class = serializers.AdsSerializer
     permission_classes = [IsAuthenticated,IsAdmin]
 
 class AdsDetail(generics.RetrieveAPIView):
-    queryset = models.Ads.objects.all()
+    queryset = models.Ad.objects.all()
     serializer_class = serializers.AdsSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
