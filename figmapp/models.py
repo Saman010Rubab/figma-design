@@ -98,10 +98,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    # name = models.CharField(max_length=50, null=True, blank=True, default=" ")
-    # description = models.TextField(null=True, blank=True,default=" ")
-    # address = models.CharField( max_length=250, null=True, blank=True,default=" ")
-
     dp = models.ImageField(upload_to='profile/dp',blank=True, null=True)
     cover = models.ImageField( upload_to='profile/cover', blank=True, null=True)
     name = models.CharField( max_length=100, blank=True, null=True)
